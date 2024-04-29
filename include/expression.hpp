@@ -53,10 +53,10 @@ struct AssignmentExpression : public Expression {
 };
 
 template<typename T>
-struct LiteralNodeExpression : public Expression {
+struct LiteralExpression : public Expression {
   T value;
 
-  constexpr explicit LiteralNodeExpression(const T &value) : value{value} {}
+  constexpr explicit LiteralExpression(const T &value) : value{value} {}
 };
 
 #endif //AMSL_EXPRESSION_HPP

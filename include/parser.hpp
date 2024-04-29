@@ -89,9 +89,9 @@ public:
   constexpr ptr_wrapper<Expression> parse_expression() {
     return std::visit<ptr_wrapper<Expression>>(Overload{
       [](IntLiteral value) {
-        return make_ptr_wrapper<LiteralNodeExpression<int>>(value.data);
+        return make_ptr_wrapper<LiteralExpression<int>>(value.data);
       },
-      [](const StringLiteral &value) { return make_ptr_wrapper<LiteralNodeExpression<std::string>>(value.data); },
+      [](const StringLiteral &value) { return make_ptr_wrapper<LiteralExpression<std::string>>(value.data); },
       [this](const std::string &value) -> ptr_wrapper<Expression> {
         if (value == ";")
           return nullptr;

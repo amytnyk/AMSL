@@ -1,0 +1,4 @@
+#ifndef AMSL_EXECUTOR_HPP
+#define AMSL_EXECUTOR_HPP
+
+#endif //AMSL_EXECUTOR_HPP
