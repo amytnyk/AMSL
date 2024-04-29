@@ -1,0 +1,15 @@
+{
+    let a: string = "Hello World!\n";
+    @print(a);
+    let b: int = 0d10;
+    @print(b);
+    let c = 0x50;
+    let d: string;
+    apply d = "1234";
+    {
+        apply c = 0xAA;
+        let e: int = 0b01001;
+    }
+
+    @print(@squared(0xFF));
+}

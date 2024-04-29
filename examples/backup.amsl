@@ -1,0 +1,19 @@
+let a: string = "Hello World!\n";
+@print(a);
+let b: int = 0d10;
+@print(b);
+
+if (@gt(b, 0d15)) {
+    @println("b > 15");
+} else if (@eq(b, 0d15)) {
+    @println("b == 15");
+} else if (@le(b, 0d15)) {
+    @println("b < 15");
+} else
+    @println("Something is wrong");
+
+let squared: [(int) -> int] = [(a: int) -> int {
+    @mul(a, a)
+}];
+
+@print(@squared(0xFF));

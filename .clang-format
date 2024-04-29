@@ -1,0 +1,7 @@
+TabWidth: 2
+ColumnLimit: 120
+SeparateDefinitionBlocks: Always
+Language: Cpp
+LineEnding: LF
+UseTab: Never
+Standard: c++20
