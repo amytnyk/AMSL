@@ -16,8 +16,8 @@ constexpr void encode(Bytes &bytes, const T &value) {
 template<Trivial T>
 struct Encoder<T> {
   static constexpr void encode(Bytes &bytes, const T &value) {
-    bytes.insert(bytes.end(), reinterpret_cast<const std::byte *>(&value),
-                 reinterpret_cast<const std::byte *>(&value) + sizeof(value));
+    auto binary_representation = std::bit_cast<std::array<std::byte, sizeof(T)>>(value);
+    bytes.insert(bytes.end(), binary_representation.begin(), binary_representation.end());
   }
 };
 

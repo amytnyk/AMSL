@@ -48,7 +48,7 @@ public:
 
   constexpr explicit AnalyzedFunctionCallExpression(std::string name,
                                                     std::vector<ptr_wrapper<AnalyzedExpression>> &&parameters = {})
-    : name{std::move(name)}, parameters{std::move(parameters)} {}
+    : name{name}, parameters{std::move(parameters)} {}
 
 protected:
   [[nodiscard]] constexpr std::size_t identifier() const override { return 1; }

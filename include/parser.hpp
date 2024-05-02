@@ -44,7 +44,7 @@ public:
   }
 
   constexpr ptr_wrapper<VariableDeclarationExpression> parse_variable_declaration_expression() {
-    const auto &name = std::get<std::string>(fetch_token());
+    auto name = std::get<std::string>(fetch_token());
 
     std::optional<std::string> type{};
 

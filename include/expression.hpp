@@ -60,8 +60,10 @@ struct FunctionCallExpression : public Expression {
   std::vector<ptr_wrapper<Expression>> parameters;
 
   constexpr explicit FunctionCallExpression(std::string name,
-                                            std::vector<ptr_wrapper<Expression>> &&parameters = {}) : name{
-    std::move(name)}, parameters{std::move(parameters)} {}
+                                            std::vector<ptr_wrapper<Expression>> &&parameters = {}) : name{name},
+                                                                                                      parameters{
+                                                                                                        std::move(
+                                                                                                          parameters)} {}
 
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     std::vector<ptr_wrapper<AnalyzedExpression>> analyzed_parameters;
@@ -75,14 +77,14 @@ struct FunctionCallExpression : public Expression {
 };
 
 struct VariableDeclarationExpression : public Expression {
-  std::string name;
-  std::optional<std::string> type;
-  std::optional<ptr_wrapper<Expression>> initializer;
+  std::string name{};
+  std::optional<std::string> type{};
+  std::optional<ptr_wrapper<Expression>> initializer{};
 
   constexpr explicit VariableDeclarationExpression(std::string name,
-                                                   const std::optional<std::string> &type = std::nullopt,
+                                                   std::optional<std::string> type = std::nullopt,
                                                    std::optional<ptr_wrapper<Expression>> &&initializer = std::nullopt)
-    : name{std::move(name)}, type{type}, initializer{std::move(initializer)} {}
+    : name{name}, type{type}, initializer{std::move(initializer)} {}
 
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     state.scopes.emplace_back();
@@ -97,7 +99,7 @@ struct VariableDeclarationExpression : public Expression {
 struct VariableExpression : public Expression {
   std::string name;
 
-  constexpr explicit VariableExpression(std::string name) : name{std::move(name)} {}
+  constexpr explicit VariableExpression(std::string name) : name{name} {}
 
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     return make_ptr_wrapper<AnalyzedVariableExpression>(state.get_variable_ref_id(name));
