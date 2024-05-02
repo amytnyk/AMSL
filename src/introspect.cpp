@@ -5,6 +5,8 @@
 #include "parser.hpp"
 #include "analyzer.hpp"
 #include "encoder.hpp"
+#include "compiler.hpp"
+#include "executor.hpp"
 
 template<typename T, auto MaxSize>
 struct oversized_array {
@@ -58,6 +60,7 @@ int main() {
     return encode_to_bytes(analyzer_expression);
   };
   constexpr auto byte_array = to_byte_array<10 * 1024 * 1024>(generator);
+//  Executor<Compiler<byte_array>::compiled>{}.execute();
 
   return 0;
 }

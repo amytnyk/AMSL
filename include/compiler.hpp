@@ -1,8 +1,10 @@
 #ifndef AMSL_COMPILER_HPP
 #define AMSL_COMPILER_HPP
 
-
 #include "string.hpp"
+#include "traits.hpp"
+#include <bit>
+#include <span>
 
 template<typename ExpressionPack>
 struct CompiledExpressionList {
@@ -38,9 +40,28 @@ struct CompiledLiteral {
   static constexpr auto value = Value;
 };
 
-struct Compiler {
-public:
+template<auto Span>
+constexpr auto span_to_array() {
+  std::array<std::byte, Span.size()> result;
+  std::copy(Span.begin(), Span.end(), result.begin());
+  return result;
+}
 
+template<auto Ptr, typename T>
+struct Decoder;
+
+template<auto Ptr, Trivial T>
+struct Decoder<Ptr, T> {
+  static constexpr auto decoded = std::bit_cast<sizeof(T)>(
+    span_to_array<std::span<std::byte, sizeof(T)>{Ptr, sizeof(T)}>());
+};
+
+template<auto Ptr>
+struct Compiler;
+
+template<auto Ptr> requires (*Ptr == 5)
+struct Compiler<Ptr> {
+  static constexpr auto compiled = Decoder<Ptr, int>::decoded;
 };
 
 #endif // AMSL_COMPILER_HPP

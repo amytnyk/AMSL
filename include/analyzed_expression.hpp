@@ -117,7 +117,13 @@ public:
   constexpr explicit AnalyzedLiteralExpression(const T &value) : value{value} {}
 
 protected:
-  [[nodiscard]] constexpr std::size_t identifier() const override { return 5; }
+  [[nodiscard]] constexpr std::size_t
+  identifier() const override {
+    if constexpr (std::is_same_v<T, int>)
+      return 5;
+    else if constexpr (std::is_same_v<T, std::string>)
+      return 6;
+  }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, value);
