@@ -20,4 +20,4 @@ public:
   }
 };
 
-#endif //AMSL_AMSL_HPP
+#endif // AMSL_AMSL_HPP

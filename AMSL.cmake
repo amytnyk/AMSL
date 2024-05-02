@@ -2,6 +2,8 @@ function(add_amsl_target target_name target_source_file)
     set(SOURCES
             include/amsl.hpp include/utils.hpp include/string.hpp include/lexer.hpp include/token.hpp
             include/parser.hpp include/expression.hpp include/ptr_wrapper.hpp include/compiler.hpp include/executor.hpp
+            include/analyzed_expression.hpp include/analyzer.hpp include/encoder.hpp include/bytes.hpp
+            include/traits.hpp include/encodable.hpp
     )
     add_executable(${target_name} src/main.cpp ${SOURCES})
 

@@ -6,10 +6,13 @@
     let c = 0x50;
     let d: string;
     apply d = "1234";
+    apply d = a;
     {
         apply c = 0xAA;
         let e: int = 0b01001;
+		apply e = a;
     }
+    apply d = a;
 
     @print(@squared(0xFF));
 }

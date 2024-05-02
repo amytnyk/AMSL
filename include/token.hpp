@@ -14,4 +14,4 @@ using StringLiteral = Literal<std::string>;
 
 using Token = std::variant<IntLiteral, StringLiteral, std::string>;
 
-#endif //AMSL_TOKEN_HPP
+#endif // AMSL_TOKEN_HPP

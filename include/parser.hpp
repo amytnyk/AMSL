@@ -54,7 +54,7 @@ public:
       type = std::get<std::string>(fetch_token());
     }
 
-    ptr_wrapper<Expression> initializer{};
+    std::optional<ptr_wrapper<Expression>> initializer{};
     const auto &next_token2 = get_next_token();
     if (std::holds_alternative<std::string>(next_token2) && std::get<std::string>(next_token2) == "=") {
       fetch_token();
@@ -114,4 +114,4 @@ private:
   ParserState state{};
 };
 
-#endif //AMSL_PARSER_HPP
+#endif // AMSL_PARSER_HPP

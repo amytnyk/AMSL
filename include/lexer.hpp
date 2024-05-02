@@ -107,4 +107,4 @@ private:
   LexerState state{};
 };
 
-#endif //AMSL_LEXER_HPP
+#endif // AMSL_LEXER_HPP

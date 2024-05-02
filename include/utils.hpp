@@ -37,9 +37,9 @@ inline __attribute__((always_inline)) constexpr decltype(auto) get_last_nth_argu
   return get_nth_argument<sizeof...(Ts) - I - 1, Ts...>();
 }
 
-template<typename ... Ts>
+template<typename... Ts>
 struct Overload : Ts ... {
-  using Ts::operator() ...;
+  using Ts::operator()...;
 };
 template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
@@ -140,4 +140,4 @@ auto as_string_t(auto str_generator) {
   return string_t<size>{str_generator()};
 }
 
-#endif //AMSL_UTILS_HPP
+#endif // AMSL_UTILS_HPP

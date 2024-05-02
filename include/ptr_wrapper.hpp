@@ -50,7 +50,7 @@ public:
     return data;
   }
 
-  constexpr T *get() {
+  constexpr T *get() const {
     return data;
   }
 
@@ -74,4 +74,4 @@ constexpr ptr_wrapper<T> make_ptr_wrapper(Args &&... args) {
   return ptr_wrapper{new T{std::forward<Args>(args)...}};
 }
 
-#endif //AMSL_PTR_WRAPPER_HPP
+#endif // AMSL_PTR_WRAPPER_HPP

@@ -43,4 +43,4 @@ public:
 
 };
 
-#endif //AMSL_COMPILER_HPP
+#endif // AMSL_COMPILER_HPP
