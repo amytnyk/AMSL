@@ -78,21 +78,51 @@ struct FunctionCallExpression : public Expression {
 
 struct VariableDeclarationExpression : public Expression {
   std::string name{};
-  std::optional<std::string> type{};
-  std::optional<ptr_wrapper<Expression>> initializer{};
+  std::string type{};
 
-  constexpr explicit VariableDeclarationExpression(std::string name,
-                                                   std::optional<std::string> type = std::nullopt,
-                                                   std::optional<ptr_wrapper<Expression>> &&initializer = std::nullopt)
+  constexpr explicit VariableDeclarationExpression(std::string name, std::string type)
+    : name{name}, type{type} {}
+
+  [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
+    state.current_scope().variable_declarations.push_back(name);
+    return make_ptr_wrapper<AnalyzedVariableDeclarationExpression>(type);
+  }
+};
+
+struct VariableDeclarationWithInitializerExpression : public Expression {
+  std::string name{};
+  std::string type{};
+  ptr_wrapper<Expression> initializer{};
+
+  constexpr explicit VariableDeclarationWithInitializerExpression(std::string name, std::string type,
+                                                                  ptr_wrapper<Expression> &&initializer)
     : name{name}, type{type}, initializer{std::move(initializer)} {}
 
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     state.scopes.emplace_back();
-    auto analyzed_initializer = initializer.has_value() ? std::optional{initializer.value()->analyze(state)}
-                                                        : std::nullopt;
+    auto analyzed_initializer = initializer->analyze(state);
     state.scopes.pop_back();
     state.current_scope().variable_declarations.push_back(name);
-    return make_ptr_wrapper<AnalyzedVariableDeclarationExpression>(type, std::move(analyzed_initializer));
+    return make_ptr_wrapper<AnalyzedVariableDeclarationWithInitializerExpression>(type,
+                                                                                  std::move(analyzed_initializer));
+  }
+};
+
+struct VariableDeclarationWithInitializerAutoTypeExpression : public Expression {
+  std::string name{};
+  ptr_wrapper<Expression> initializer{};
+
+  constexpr explicit VariableDeclarationWithInitializerAutoTypeExpression(std::string name,
+                                                                          ptr_wrapper<Expression> &&initializer)
+    : name{name}, initializer{std::move(initializer)} {}
+
+  [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
+    state.scopes.emplace_back();
+    auto analyzed_initializer = initializer->analyze(state);
+    state.scopes.pop_back();
+    state.current_scope().variable_declarations.push_back(name);
+    return make_ptr_wrapper<AnalyzedVariableDeclarationWithInitializerAutoTypeExpression>(
+      std::move(analyzed_initializer));
   }
 };
 

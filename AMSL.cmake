@@ -12,7 +12,7 @@ function(add_amsl_target target_name target_source_file)
     set(generate_source_file_target_name "GenerateSource-${target_name}")
 
     target_include_directories(${target_name} PRIVATE include)
-    target_compile_options(${target_name} PRIVATE "-fconstexpr-depth=1000000" "-ftemplate-depth=1000000")
+    target_compile_options(${target_name} PRIVATE "-fconstexpr-depth=1000000" "-ftemplate-depth=1000000" "-ftemplate-backtrace-limit=0")
     target_compile_definitions(${target_name} PRIVATE "-DSOURCE_FILE=\"${absolute_generated_source_file}\"")
 
     add_custom_command(
@@ -39,7 +39,7 @@ function(add_amsl_target target_name target_source_file)
     set(introspection_target_name "${target_name}-introspect")
     add_executable(${introspection_target_name} src/introspect.cpp ${SOURCES})
     target_include_directories(${introspection_target_name} PRIVATE include)
-    target_compile_options(${introspection_target_name} PRIVATE "-fconstexpr-depth=1000000" "-ftemplate-depth=1000000")
+    target_compile_options(${introspection_target_name} PRIVATE "-fconstexpr-depth=1000000" "-ftemplate-depth=1000000" "-ftemplate-backtrace-limit=0")
     target_compile_definitions(${introspection_target_name} PRIVATE "-DSOURCE_FILE=\"${absolute_generated_source_file}\"")
     add_dependencies(${introspection_target_name} ${generate_source_file_target_name})
 endfunction()

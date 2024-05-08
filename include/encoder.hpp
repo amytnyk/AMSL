@@ -57,6 +57,16 @@ struct Encoder<T> {
   }
 };
 
+template<>
+struct Encoder<std::string> {
+  static constexpr void encode(Bytes &bytes, const std::string &value) {
+    ::encode(bytes, value.size() + 1);
+    for (const auto &item: value)
+      ::encode(bytes, item);
+    ::encode(bytes, std::byte{0});
+  }
+};
+
 template<typename T>
 constexpr Bytes encode_to_bytes(const T &value) {
   Bytes bytes;

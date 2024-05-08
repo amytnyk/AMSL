@@ -43,7 +43,7 @@ public:
     return expression;
   }
 
-  constexpr ptr_wrapper<VariableDeclarationExpression> parse_variable_declaration_expression() {
+  constexpr ptr_wrapper<Expression> parse_variable_declaration_expression() {
     auto name = std::get<std::string>(fetch_token());
 
     std::optional<std::string> type{};
@@ -61,7 +61,15 @@ public:
       initializer = parse_expression();
     }
 
-    return make_ptr_wrapper<VariableDeclarationExpression>(name, type, std::move(initializer));
+    if (type.has_value()) {
+      if (initializer.has_value())
+        return make_ptr_wrapper<VariableDeclarationWithInitializerExpression>(name, type.value(),
+                                                                              std::move(initializer.value()));
+      else
+        return make_ptr_wrapper<VariableDeclarationExpression>(name, type.value());
+    } else
+      return make_ptr_wrapper<VariableDeclarationWithInitializerAutoTypeExpression>(name,
+                                                                                    std::move(initializer.value()));
   }
 
   constexpr ptr_wrapper<AssignmentExpression> parse_assignment_expression() {

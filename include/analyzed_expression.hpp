@@ -20,7 +20,7 @@ public:
   }
 
 protected:
-  [[nodiscard]] constexpr virtual std::size_t identifier() const = 0;
+  [[nodiscard]] constexpr virtual std::byte identifier() const = 0;
 
   constexpr virtual void encode_to_bytes(Bytes &bytes) const = 0;
 };
@@ -34,7 +34,7 @@ public:
   }
 
 protected:
-  [[nodiscard]] constexpr std::size_t identifier() const override { return 0; }
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{0}; }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, expressions);
@@ -51,7 +51,7 @@ public:
     : name{name}, parameters{std::move(parameters)} {}
 
 protected:
-  [[nodiscard]] constexpr std::size_t identifier() const override { return 1; }
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{1}; }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, name);
@@ -61,18 +61,49 @@ protected:
 
 class AnalyzedVariableDeclarationExpression : public AnalyzedExpression {
 public:
-  std::optional<std::string> type;
-  std::optional<ptr_wrapper<AnalyzedExpression>> initializer;
+  std::string type;
 
-  constexpr explicit AnalyzedVariableDeclarationExpression(const std::optional<std::string> &type = std::nullopt,
-                                                           std::optional<ptr_wrapper<AnalyzedExpression>> &&initializer = std::nullopt)
-    : type{type}, initializer{std::move(initializer)} {}
+  constexpr explicit AnalyzedVariableDeclarationExpression(std::string type)
+    : type{type} {}
 
 protected:
-  [[nodiscard]] constexpr std::size_t identifier() const override { return 2; }
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{2}; }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, type);
+  }
+};
+
+class AnalyzedVariableDeclarationWithInitializerExpression : public AnalyzedExpression {
+public:
+  std::string type;
+  ptr_wrapper<AnalyzedExpression> initializer;
+
+  constexpr explicit AnalyzedVariableDeclarationWithInitializerExpression(std::string type,
+                                                                          ptr_wrapper<AnalyzedExpression> &&initializer)
+    : type{type}, initializer{std::move(initializer)} {}
+
+protected:
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{3}; }
+
+  constexpr void encode_to_bytes(Bytes &bytes) const override {
+    ::encode(bytes, type);
+    ::encode(bytes, initializer);
+  }
+};
+
+class AnalyzedVariableDeclarationWithInitializerAutoTypeExpression : public AnalyzedExpression {
+public:
+  ptr_wrapper<AnalyzedExpression> initializer;
+
+  constexpr explicit AnalyzedVariableDeclarationWithInitializerAutoTypeExpression(
+    ptr_wrapper<AnalyzedExpression> &&initializer)
+    : initializer{std::move(initializer)} {}
+
+protected:
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{4}; }
+
+  constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, initializer);
   }
 };
@@ -84,7 +115,7 @@ public:
   constexpr explicit AnalyzedVariableExpression(std::size_t ref_id) : ref_id{ref_id} {}
 
 protected:
-  [[nodiscard]] constexpr std::size_t identifier() const override { return 3; }
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{5}; }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, ref_id);
@@ -101,7 +132,7 @@ public:
                                                                                            rhs{std::move(rhs)} {}
 
 protected:
-  [[nodiscard]] constexpr std::size_t identifier() const override { return 4; }
+  [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{6}; }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, lhs);
@@ -117,20 +148,17 @@ public:
   constexpr explicit AnalyzedLiteralExpression(const T &value) : value{value} {}
 
 protected:
-  [[nodiscard]] constexpr std::size_t
+  [[nodiscard]] constexpr std::byte
   identifier() const override {
     if constexpr (std::is_same_v<T, int>)
-      return 5;
+      return std::byte{7};
     else if constexpr (std::is_same_v<T, std::string>)
-      return 6;
+      return std::byte{8};
   }
 
   constexpr void encode_to_bytes(Bytes &bytes) const override {
     ::encode(bytes, value);
   }
 };
-
-//template<typename T>
-//constexpr std::byte AnalyzedLiteralExpression<T>::identifier{10};
 
 #endif // AMSL_ANALYZED_EXPRESSION_HPP

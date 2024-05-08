@@ -5,7 +5,7 @@
 #include <iterator>
 
 template<typename T>
-concept Trivial = std::is_trivial_v<T>;
+concept Trivial = std::is_trivially_copyable_v<T>;
 
 template<typename T>
 concept Vector = requires(T a) {
