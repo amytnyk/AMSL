@@ -8,6 +8,8 @@
 #include <algorithm>
 #include "string.hpp"
 
+#define AMSL_INLINE inline __attribute__((always_inline))
+
 template<std::size_t N, typename... Args>
 struct get_nth_argument_helper {
   static_assert(N < sizeof...(Args), "Index out of range");
@@ -15,26 +17,26 @@ struct get_nth_argument_helper {
 
 template<std::size_t N, typename T, typename... Ts>
 struct get_nth_argument_helper<N, T, Ts...> : get_nth_argument_helper<N - 1, Ts...> {
-  constexpr static inline __attribute__((always_inline)) decltype(auto) get(T &&value, Ts &&... args) {
+  constexpr static AMSL_INLINE decltype(auto) get(T &&value, Ts &&... args) {
     return get_nth_argument_helper<N - 1, Ts...>::get(args...);
   }
 };
 
 template<typename T, typename... Ts>
 struct get_nth_argument_helper<0, T, Ts...> {
-  constexpr static inline __attribute__((always_inline)) decltype(auto) get(T &&value, Ts &&... args) {
+  constexpr static AMSL_INLINE decltype(auto) get(T &&value, Ts &&... args) {
     return value;
   }
 };
 
 template<std::size_t I, typename... Ts>
-inline __attribute__((always_inline)) constexpr decltype(auto) get_nth_argument(Ts &&... args) {
+constexpr AMSL_INLINE decltype(auto) get_nth_argument(Ts &&... args) {
   return get_nth_argument_helper<I, Ts...>::get(std::forward<Ts>(args)...);
 }
 
 template<std::size_t I, typename... Ts>
-inline __attribute__((always_inline)) constexpr decltype(auto) get_last_nth_argument(Ts &&... args) {
-  return get_nth_argument<sizeof...(Ts) - I - 1, Ts...>();
+constexpr AMSL_INLINE decltype(auto) get_last_nth_argument(Ts &&... args) {
+  return get_nth_argument<sizeof...(Ts) - I - 1, Ts...>(std::forward<Ts>(args)...);
 }
 
 template<typename... Ts>
@@ -138,6 +140,37 @@ constexpr std::string escape(const std::string &text) {
 auto as_string_t(auto str_generator) {
   constexpr std::size_t size = str_generator().size();
   return string_t<size>{str_generator()};
+}
+
+template<typename T, auto MaxSize>
+struct oversized_array {
+  std::array<T, MaxSize> data{};
+  std::size_t size{};
+};
+
+template<auto MaxSize, typename T>
+consteval auto to_oversized_array(const std::vector<T> &bytes) {
+  oversized_array<T, MaxSize> result{};
+  std::copy(bytes.begin(), bytes.end(), result.data.begin());
+  result.size = bytes.size();
+  return result;
+}
+
+template<auto MaxSize>
+consteval auto to_right_sized_array(auto generator) {
+  constexpr auto oversized = to_oversized_array<MaxSize>(generator());
+  std::array<typename decltype(oversized.data)::value_type, oversized.size> result;
+  std::copy(oversized.data.begin(), std::next(oversized.data.begin(), oversized.size), result.begin());
+  return result;
+}
+
+template<auto MaxSize>
+consteval auto to_byte_array(auto generator) {
+  return to_right_sized_array<MaxSize>(generator);
+}
+
+constexpr auto &take_ref(auto &obj) noexcept {
+  return obj;
 }
 
 #endif // AMSL_UTILS_HPP

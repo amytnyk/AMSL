@@ -1,18 +1,17 @@
 {
-    let a: string = "Hello World!\n";
-    @print(a);
+    let a: string = "Hello World!";
+    @println(a);
     let b: int = 0d10;
-    @print(b);
+    @println(b);
     let c = 0x50;
     let d: string;
     apply d = "1234";
     apply d = a;
     {
         apply c = 0xAA;
-        let e: int = 0b01001;
-		apply e = a;
     }
     apply d = a;
 
-    @print(@squared(0xFF));
+    @println("0xFF ** 2 = ", @squared(0xFF));
+    0
 }

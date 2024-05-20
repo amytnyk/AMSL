@@ -33,6 +33,11 @@ public:
 
     auto expression = make_ptr_wrapper<FunctionCallExpression>(name);
     while (true) {
+      if (!expression->parameters.empty()) {
+        const auto &next_token = get_next_token();
+        if (std::holds_alternative<std::string>(next_token) && std::get<std::string>(next_token) == ",")
+          fetch_token();
+      }
       const auto &next_token = get_next_token();
       if (std::holds_alternative<std::string>(next_token) && std::get<std::string>(next_token) == ")") {
         fetch_token();

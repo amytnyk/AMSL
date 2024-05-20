@@ -51,7 +51,7 @@ struct CompiledLiteral {
 };
 
 template<auto Value>
-using CompiledLiteralAuto = CompiledLiteral<decltype(Value), Value>;
+using CompiledLiteralAuto = CompiledLiteral<std::remove_const_t<decltype(Value)>, Value>;
 
 template<auto Size>
 constexpr auto span_to_array(const auto &span) {
@@ -91,6 +91,41 @@ struct TypeDecoder<"int"> {
 };
 
 template<>
+struct TypeDecoder<"uint"> {
+  using type = unsigned int;
+};
+
+template<>
+struct TypeDecoder<"int16"> {
+  using type = int16_t;
+};
+
+template<>
+struct TypeDecoder<"uint16"> {
+  using type = u_int16_t;
+};
+
+template<>
+struct TypeDecoder<"int32"> {
+  using type = int32_t;
+};
+
+template<>
+struct TypeDecoder<"uint32"> {
+  using type = u_int32_t;
+};
+
+template<>
+struct TypeDecoder<"int64"> {
+  using type = int64_t;
+};
+
+template<>
+struct TypeDecoder<"uint64"> {
+  using type = u_int64_t;
+};
+
+template<>
 struct TypeDecoder<"string"> {
   using type = std::string;
 };
@@ -99,6 +134,12 @@ template<>
 struct TypeDecoder<"float"> {
   using type = float;
 };
+
+template<>
+struct TypeDecoder<"double"> {
+  using type = double;
+};
+
 
 template<>
 struct TypeDecoder<"bool"> {

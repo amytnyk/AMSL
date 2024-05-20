@@ -82,6 +82,10 @@ struct string_t {
   [[nodiscard]] consteval const char *c_str() const {
     return &data.at(0);
   }
+
+  [[nodiscard]] consteval std::string_view sv() const {
+    return std::string_view{data.begin(), data.end()};
+  }
 };
 
 #endif // AMSL_STRING_HPP
