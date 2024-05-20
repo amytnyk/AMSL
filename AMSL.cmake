@@ -12,7 +12,7 @@ function(add_amsl_target target_name target_source_file)
     set(generate_source_file_target_name "GenerateSource-${target_name}")
 
     target_include_directories(${target_name} PRIVATE include)
-    target_compile_options(${target_name} PRIVATE "-fconstexpr-depth=1000000" "-ftemplate-depth=1000000" "-ftemplate-backtrace-limit=0")
+    target_compile_options(${target_name} PRIVATE "-fconstexpr-depth=1000000000" "-ftemplate-depth=1000000000" "-ftemplate-backtrace-limit=0" "-fconstexpr-ops-limit=1000000000")
     target_compile_definitions(${target_name} PRIVATE "-DSOURCE_FILE=\"${absolute_generated_source_file}\"")
 
     add_custom_command(

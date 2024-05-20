@@ -37,6 +37,8 @@ struct Expression {
   constexpr virtual ~Expression() = default;
 
   [[nodiscard]] constexpr virtual ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const = 0;
+
+  [[nodiscard]] constexpr virtual std::string as_string() const = 0;
 };
 
 struct ExpressionList : public Expression {
@@ -52,6 +54,16 @@ struct ExpressionList : public Expression {
       analyzed_expressions.push_back(expression->analyze(state));
     state.scopes.pop_back();
     return make_ptr_wrapper<AnalyzedExpressionList>(std::move(analyzed_expressions));
+  }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    std::string str = "ExpressionList(expressions=[";
+    for (std::size_t idx = 0; idx < expressions.size(); ++idx) {
+      if (idx)
+        str += ", ";
+      str += expressions[idx]->as_string();
+    }
+    return str + "])";
   }
 };
 
@@ -74,6 +86,16 @@ struct FunctionCallExpression : public Expression {
     }
     return make_ptr_wrapper<AnalyzedFunctionCallExpression>(name, std::move(analyzed_parameters));
   }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    std::string str = "FunctionCallExpression(name='" + name + "', parameters=[";
+    for (std::size_t idx = 0; idx < parameters.size(); ++idx) {
+      if (idx)
+        str += ", ";
+      str += parameters[idx]->as_string();
+    }
+    return str + "])";
+  }
 };
 
 struct VariableDeclarationExpression : public Expression {
@@ -86,6 +108,10 @@ struct VariableDeclarationExpression : public Expression {
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     state.current_scope().variable_declarations.push_back(name);
     return make_ptr_wrapper<AnalyzedVariableDeclarationExpression>(type);
+  }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "VariableDeclarationExpression(name='" + name + "', type='" + type + "')";
   }
 };
 
@@ -106,6 +132,11 @@ struct VariableDeclarationWithInitializerExpression : public Expression {
     return make_ptr_wrapper<AnalyzedVariableDeclarationWithInitializerExpression>(type,
                                                                                   std::move(analyzed_initializer));
   }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "VariableDeclarationWithInitializerExpression(name='" + name + "', type='" + type + "', initializer=" +
+           initializer->as_string() + ")";
+  }
 };
 
 struct VariableDeclarationWithInitializerAutoTypeExpression : public Expression {
@@ -124,6 +155,11 @@ struct VariableDeclarationWithInitializerAutoTypeExpression : public Expression 
     return make_ptr_wrapper<AnalyzedVariableDeclarationWithInitializerAutoTypeExpression>(
       std::move(analyzed_initializer));
   }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "VariableDeclarationWithInitializerAutoTypeExpression(name='" + name + "', initializer=" +
+           initializer->as_string() + ")";
+  }
 };
 
 struct VariableExpression : public Expression {
@@ -133,6 +169,10 @@ struct VariableExpression : public Expression {
 
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     return make_ptr_wrapper<AnalyzedVariableExpression>(state.get_variable_ref_id(name));
+  }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "VariableExpression(name='" + name + "')";
   }
 };
 
@@ -152,6 +192,10 @@ struct AssignmentExpression : public Expression {
     state.scopes.pop_back();
     return make_ptr_wrapper<AnalyzedAssignmentExpression>(std::move(analyzed_lhs), std::move(analyzed_rhs));
   }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "AssignmentExpression(lhs=" + lhs->as_string() + ", rhs=" + rhs->as_string() + ")";
+  }
 };
 
 template<typename T>
@@ -162,6 +206,13 @@ struct LiteralExpression : public Expression {
 
   [[nodiscard]] constexpr ptr_wrapper<AnalyzedExpression> analyze(AnalyzerState &state) const override {
     return make_ptr_wrapper<AnalyzedLiteralExpression<T>>(value);
+  }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    if constexpr (std::is_same_v<T, int>)
+      return std::string{"LiteralExpression(value="} + int_to_string(value) + ")";
+    else
+      return std::string{"LiteralExpression(value='"} + value + "')";
   }
 };
 

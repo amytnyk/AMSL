@@ -19,6 +19,8 @@ public:
     encode_to_bytes(bytes);
   }
 
+  [[nodiscard]] constexpr virtual std::string as_string() const = 0;
+
 protected:
   [[nodiscard]] constexpr virtual std::byte identifier() const = 0;
 
@@ -31,6 +33,16 @@ public:
 
   constexpr explicit AnalyzedExpressionList(std::vector<ptr_wrapper<AnalyzedExpression>> &&expressions = {})
     : expressions{std::move(expressions)} {
+  }
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    std::string str = "AnalyzedExpressionList(expressions=[";
+    for (std::size_t idx = 0; idx < expressions.size(); ++idx) {
+      if (idx)
+        str += ", ";
+      str += expressions[idx]->as_string();
+    }
+    return str + "])";
   }
 
 protected:
@@ -50,6 +62,16 @@ public:
                                                     std::vector<ptr_wrapper<AnalyzedExpression>> &&parameters = {})
     : name{name}, parameters{std::move(parameters)} {}
 
+  [[nodiscard]] constexpr std::string as_string() const override {
+    std::string str = "AnalyzedFunctionCallExpression(name='" + name + "', parameters=[";
+    for (std::size_t idx = 0; idx < parameters.size(); ++idx) {
+      if (idx)
+        str += ", ";
+      str += parameters[idx]->as_string();
+    }
+    return str + "])";
+  }
+
 protected:
   [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{1}; }
 
@@ -65,6 +87,10 @@ public:
 
   constexpr explicit AnalyzedVariableDeclarationExpression(std::string type)
     : type{type} {}
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "AnalyzedVariableDeclarationExpression(type='" + type + "')";
+  }
 
 protected:
   [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{2}; }
@@ -83,6 +109,11 @@ public:
                                                                           ptr_wrapper<AnalyzedExpression> &&initializer)
     : type{type}, initializer{std::move(initializer)} {}
 
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "AnalyzedVariableDeclarationWithInitializerExpression(type='" + type + "', initializer=" +
+           initializer->as_string() + ")";
+  }
+
 protected:
   [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{3}; }
 
@@ -100,6 +131,11 @@ public:
     ptr_wrapper<AnalyzedExpression> &&initializer)
     : initializer{std::move(initializer)} {}
 
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "AnalyzedVariableDeclarationWithInitializerAutoTypeExpression(initializer=" +
+           initializer->as_string() + ")";
+  }
+
 protected:
   [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{4}; }
 
@@ -113,6 +149,10 @@ public:
   std::size_t ref_id;
 
   constexpr explicit AnalyzedVariableExpression(std::size_t ref_id) : ref_id{ref_id} {}
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "AnalyzedVariableExpression(ref_id=" + int_to_string(ref_id) + ")";
+  }
 
 protected:
   [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{5}; }
@@ -131,6 +171,10 @@ public:
                                                   ptr_wrapper<AnalyzedExpression> &&rhs) : lhs{std::move(lhs)},
                                                                                            rhs{std::move(rhs)} {}
 
+  [[nodiscard]] constexpr std::string as_string() const override {
+    return "AnalyzedAssignmentExpression(lhs=" + lhs->as_string() + ", rhs=" + rhs->as_string() + ")";
+  }
+
 protected:
   [[nodiscard]] constexpr std::byte identifier() const override { return std::byte{6}; }
 
@@ -146,6 +190,13 @@ public:
   T value;
 
   constexpr explicit AnalyzedLiteralExpression(const T &value) : value{value} {}
+
+  [[nodiscard]] constexpr std::string as_string() const override {
+    if constexpr (std::is_same_v<T, int>)
+      return std::string{"AnalyzedLiteralExpression(value="} + int_to_string(value) + ")";
+    else
+      return std::string{"AnalyzedLiteralExpression(value='"} + value + "')";
+  }
 
 protected:
   [[nodiscard]] constexpr std::byte

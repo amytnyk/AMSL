@@ -5,7 +5,9 @@
 #include <utility>
 #include <string_view>
 #include <cctype>
+#include <chrono>
 #include <algorithm>
+#include <atomic>
 #include "string.hpp"
 
 #define AMSL_INLINE inline __attribute__((always_inline))
@@ -92,9 +94,10 @@ constexpr int string_to_int(std::string_view str, IntBase base = IntBase::DECIMA
   return value;
 }
 
-constexpr std::string int_to_string(auto value, IntBase base = IntBase::DECIMAL) {
+template<typename T>
+constexpr std::string int_to_string(T value, IntBase base = IntBase::DECIMAL) {
   std::string str{};
-  for (; value; value /= static_cast<int>(base))
+  for (; value != T{}; value /= static_cast<int>(base))
     str += int_to_char(value % static_cast<int>(base), base);
   std::reverse(str.begin(), str.end());
   if (str.empty())
@@ -171,6 +174,43 @@ consteval auto to_byte_array(auto generator) {
 
 constexpr auto &take_ref(auto &obj) noexcept {
   return obj;
+}
+
+inline std::chrono::high_resolution_clock::time_point get_current_time_fenced() {
+  std::atomic_thread_fence(std::memory_order_seq_cst);
+  auto res_time = std::chrono::high_resolution_clock::now();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
+  return res_time;
+}
+
+template<class D>
+inline long long to_ms(const D &d) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
+}
+
+template<typename T>
+constexpr auto get_type_name() -> std::string_view {
+#if defined(__clang__)
+  constexpr auto prefix = std::string_view{"[T = "};
+    constexpr auto suffix = "]";
+    constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+#elif defined(__GNUC__)
+  constexpr auto prefix = std::string_view{"with T = "};
+  constexpr auto suffix = "; ";
+  constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+#elif defined(_MSC_VER)
+  constexpr auto prefix = std::string_view{"get_type_name<"};
+    constexpr auto suffix = ">(void)";
+    constexpr auto function = std::string_view{__FUNCSIG__};
+#else
+# error Unsupported compiler
+#endif
+
+  const auto start = function.find(prefix) + prefix.size();
+  const auto end = function.find(suffix);
+  const auto size = end - start;
+
+  return function.substr(start, size);
 }
 
 #endif // AMSL_UTILS_HPP

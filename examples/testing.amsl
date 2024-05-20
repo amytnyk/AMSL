@@ -1,0 +1,17 @@
+{
+    let start = @get_current_time();
+    let a: string = "Hello World!";
+    @println(a);
+    let b: int16;
+    let c: int16;
+    apply b = 6;
+    apply c = 10;
+    @pinc(c);
+    @println("b + c = ", @add(b, c));
+
+    @println("0xFF ** 2 = ", @squared(0xFF));
+    @sleep(100);
+    let end = @get_current_time();
+    @println("Elapsed time: ", @get_millis(@sub(end, start)))
+    0
+}

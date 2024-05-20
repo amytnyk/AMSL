@@ -7,61 +7,67 @@
 #include "encoder.hpp"
 #include "compiler.hpp"
 
-template <typename T>
-constexpr auto get_type_name() -> std::string_view
-{
-#if defined(__clang__)
-  constexpr auto prefix = std::string_view{"[T = "};
-    constexpr auto suffix = "]";
-    constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
-#elif defined(__GNUC__)
-  constexpr auto prefix = std::string_view{"with T = "};
-  constexpr auto suffix = "; ";
-  constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
-#elif defined(_MSC_VER)
-  constexpr auto prefix = std::string_view{"get_type_name<"};
-    constexpr auto suffix = ">(void)";
-    constexpr auto function = std::string_view{__FUNCSIG__};
-#else
-# error Unsupported compiler
-#endif
-
-  const auto start = function.find(prefix) + prefix.size();
-  const auto end = function.find(suffix);
-  const auto size = end - start;
-
-  return function.substr(start, size);
-}
-
 int main() {
   #include SOURCE_FILE
 
-  auto tokens_str = as_string_t([]() {
+  auto introspection_str = as_string_t([]() {
     auto tokens = Lexer{source}.tokenize();
-    std::string str = "Tokens: " + int_to_string(tokens.size()) + "\n";
-    for (const auto &token: tokens) {
+    auto expression = Parser{tokens}.parse();
+    auto analyzed_expression = Analyzer{expression}.analyze();
+    auto bytes = encode_to_bytes(analyzed_expression);
+
+    auto generator = []() {
+      auto tokens = Lexer{source}.tokenize();
+      auto expression = Parser{tokens}.parse();
+      auto analyzed_expression = Analyzer{expression}.analyze();
+      return encode_to_bytes(analyzed_expression);
+    };
+    static constexpr auto byte_array = to_byte_array<10 * 1024 * 1024>(generator);
+    using TB_AST = Compiler<byte_array.begin()>::compiled;
+
+    std::string str = "Step 1 - Embedder\nSource code:\n";
+    str += source;
+    str += "\n\n";
+    str += "Step 2 - Lexer\nTokens: [";
+    for (std::size_t idx = 0; idx < tokens.size(); ++idx) {
+      if (idx)
+        str += ", ";
       std::visit(Overload{
         [&str](IntLiteral value) { str += "IntLiteral(" + int_to_string(value.data) + ")"; },
         [&str](const StringLiteral &value) { str += "StringLiteral(" + escape(value.data) + ")"; },
         [&str](const std::string &value) { str += "string(" + escape(value) + ")"; },
-      }, token);
-      str += "\n";
+      }, tokens[idx]);
     }
+    str += "]\n\n";
+    str += "Step 3 - Parser\nAST: " + expression->as_string();
+    str += "\n\n";
+    str += "Step 4 - Analyzer\nAnalyzed AST: " + analyzed_expression->as_string();
+    str += "\n\n";
+    str += "Step 5 - Encoder\nByte vector: [";
+    for (std::size_t idx = 0; idx < bytes.size(); ++idx) {
+      if (idx)
+        str += ", ";
+      auto repr = int_to_string(static_cast<int>(bytes[idx]), IntBase::HEX);
+      str += std::string{"0x"} + (repr.size() == 2 ? "" : "0") + repr;
+    }
+    str += "]";
+    str += "\n\n";
+    str += "Step 6 - Runtime to compile-time wall\nByte array: [";
+    for (std::size_t idx = 0; idx < byte_array.size(); ++idx) {
+      if (idx)
+        str += ", ";
+      auto repr = int_to_string(static_cast<int>(byte_array[idx]), IntBase::HEX);
+      str += std::string{"0x"} + (repr.size() == 2 ? "" : "0") + repr;
+    }
+    str += "]";
+    str += "\n\n";
+    str += "Step 7 - Compiler\nTB-AST: ";
+    str += get_type_name<TB_AST>();
+    str += "\n\n";
+    str += "Step 8 - Executor\nExecuting here ...";
     return str;
   });
-  std::cout << std::string_view{tokens_str.data.begin(), tokens_str.data.end()} << std::endl;
-
-  constexpr auto generator = []() {
-    auto tokens = Lexer{source}.tokenize();
-    auto expression = Parser{tokens}.parse();
-    auto analyzer_expression = Analyzer{expression}.analyze();
-    return encode_to_bytes(analyzer_expression);
-  };
-
-  static constexpr auto byte_array = to_byte_array<10 * 1024 * 1024>(generator);
-  using p = Compiler<byte_array.begin()>::compiled;
-  std::cout << get_type_name<p>();
-//  Executor<p>{}.execute();
+  std::cout << std::string_view{introspection_str.data.begin(), introspection_str.data.end()} << std::endl;
 
   return 0;
 }

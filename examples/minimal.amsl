@@ -1,0 +1,8 @@
+{
+    let a: string = "Hello World!";
+    let b: int;
+    apply b = 10;
+    let c: int = 20;
+    @println("b = ", b, ", c = ", c, ", b + c ^ 2 = ", @add(b, @squared(c)));
+    0
+}
